@@ -22,7 +22,6 @@ export const serverEnv = createEnv({
     MAPBOX_ACCESS_TOKEN: z.string().min(1),
     TRIPADVISOR_API_KEY: z.string().min(1),
     AVIATION_STACK_API_KEY: z.string().min(1),
-    CRON_SECRET: z.string().min(1),
     BLOB_READ_WRITE_TOKEN: z.string().min(1),
     MEM0_API_KEY: z.string().min(1),
     MEM0_ORG_ID: z.string().min(1),

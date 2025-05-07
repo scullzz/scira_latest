@@ -1,14 +1,9 @@
-import { serverEnv } from '@/env/server';
 import { del, list, ListBlobResult } from '@vercel/blob';
 import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'edge';
 
 export async function GET(req: NextRequest) {
-    if (req.headers.get('Authorization') !== `Bearer ${serverEnv.CRON_SECRET}`) {
-        return new NextResponse('Unauthorized', { status: 401 });
-    }
-
     try {
         await deleteAllBlobsInFolder('mplx/');
         return new NextResponse('All files in mplx/ folder were deleted', {
