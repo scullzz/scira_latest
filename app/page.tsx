@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 import 'katex/dist/katex.min.css';
 
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,21 +8,9 @@ import { CalendarBlank, Clock as PhosphorClock, Info } from '@phosphor-icons/rea
 import { parseAsString, useQueryState } from 'nuqs';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
-import {
-    Moon,
-    Plus,
-    Sun,
-} from 'lucide-react';
+import { Moon, Plus, Sun } from 'lucide-react';
 import Link from 'next/link';
-import React, {
-    memo,
-    Suspense,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from 'react';
+import React, { memo, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import FormComponent from '@/components/ui/form-component';
@@ -41,33 +29,25 @@ interface Attachment {
 
 const VercelIcon = ({ size = 16 }: { size: number }) => {
     return (
-        <svg
-            height={size}
-            strokeLinejoin="round"
-            viewBox="0 0 16 16"
-            width={size}
-            style={{ color: "currentcolor" }}
-        >
-            <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M8 1L16 15H0L8 1Z"
-                fill="currentColor"
-            ></path>
+        <svg height={size} strokeLinejoin="round" viewBox="0 0 16 16" width={size} style={{ color: 'currentcolor' }}>
+            <path fillRule="evenodd" clipRule="evenodd" d="M8 1L16 15H0L8 1Z" fill="currentColor"></path>
         </svg>
     );
 };
 
 const HomeContent = () => {
-    const [query] = useQueryState('query', parseAsString.withDefault(''))
-    const [q] = useQueryState('q', parseAsString.withDefault(''))
+    const [query] = useQueryState('query', parseAsString.withDefault(''));
+    const [q] = useQueryState('q', parseAsString.withDefault(''));
 
     // Use localStorage hook directly for model selection with a default
     const [selectedModel, setSelectedModel] = useLocalStorage('scira-selected-model', 'scira-default');
 
-    const initialState = useMemo(() => ({
-        query: query || q,
-    }), [query, q]);
+    const initialState = useMemo(
+        () => ({
+            query: query || q,
+        }),
+        [query, q],
+    );
 
     const lastSubmittedQueryRef = useRef(initialState.query);
     const bottomRef = useRef<HTMLDivElement>(null);
@@ -86,55 +66,48 @@ const HomeContent = () => {
     // Get stored user ID
     const userId = useMemo(() => getUserId(), []);
 
-    const chatOptions: UseChatOptions = useMemo(() => ({
-        api: '/api/search',
-        experimental_throttle: 500,
-        maxSteps: 5,
-        body: {
-            model: selectedModel,
-            group: selectedGroup,
-            user_id: userId,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        },
-        onFinish: async (message, { finishReason }) => {
-            console.log("[finish reason]:", finishReason);
-            if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
-                const newHistory = [
-                    { role: "user", content: lastSubmittedQueryRef.current },
-                    { role: "assistant", content: message.content },
-                ];
-                const { questions } = await suggestQuestions(newHistory);
-                setSuggestedQuestions(questions);
-            }
-        },
-        onError: (error) => {
-            console.error("Chat error:", error.cause, error.message);
-            toast.error("An error occurred.", {
-                description: `Oops! An error occurred while processing your request. ${error.message}`,
-            });
-        },
-    }), [selectedModel, selectedGroup, userId]);
+    const chatOptions: UseChatOptions = useMemo(
+        () => ({
+            api: '/api/search',
+            experimental_throttle: 500,
+            maxSteps: 5,
+            body: {
+                model: selectedModel,
+                group: selectedGroup,
+                user_id: userId,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            },
+            onFinish: async (message, { finishReason }) => {
+                console.log('[finish reason]:', finishReason);
+                if (message.content && (finishReason === 'stop' || finishReason === 'length')) {
+                    const newHistory = [
+                        { role: 'user', content: lastSubmittedQueryRef.current },
+                        { role: 'assistant', content: message.content },
+                    ];
+                    const { questions } = await suggestQuestions(newHistory);
+                    setSuggestedQuestions(questions);
+                }
+            },
+            onError: (error) => {
+                console.error('Chat error:', error.cause, error.message);
+                toast.error('An error occurred.', {
+                    description: `Oops! An error occurred while processing your request. ${error.message}`,
+                });
+            },
+        }),
+        [selectedModel, selectedGroup, userId],
+    );
 
-    const {
-        input,
-        messages,
-        setInput,
-        append,
-        handleSubmit,
-        setMessages,
-        reload,
-        stop,
-        status,
-        error,
-    } = useChat(chatOptions);
+    const { input, messages, setInput, append, handleSubmit, setMessages, reload, stop, status, error } =
+        useChat(chatOptions);
 
     useEffect(() => {
         if (!initializedRef.current && initialState.query && !messages.length) {
             initializedRef.current = true;
-            console.log("[initial query]:", initialState.query);
+            console.log('[initial query]:', initialState.query);
             append({
                 content: initialState.query,
-                role: 'user'
+                role: 'user',
             });
         }
     }, [initialState.query, append, setInput, messages.length]);
@@ -172,7 +145,7 @@ const HomeContent = () => {
             // Initial scroll to bottom when streaming starts
             if (bottomRef.current) {
                 isAutoScrollingRef.current = true;
-                bottomRef.current.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current.scrollIntoView({ behavior: 'smooth' });
             }
         }
     }, [status]);
@@ -201,7 +174,7 @@ const HomeContent = () => {
         if (status === 'streaming' && !hasManuallyScrolled && bottomRef.current) {
             scrollTimeout = setTimeout(() => {
                 isAutoScrollingRef.current = true;
-                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+                bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
                 // Reset auto-scroll flag after animation
                 setTimeout(() => {
                     isAutoScrollingRef.current = false;
@@ -217,7 +190,6 @@ const HomeContent = () => {
         };
     }, [messages, suggestedQuestions, status, hasManuallyScrolled]);
 
-
     const AboutButton = () => {
         return (
             <Link href="/about">
@@ -232,15 +204,19 @@ const HomeContent = () => {
         );
     };
 
-    interface NavbarProps { }
+    interface NavbarProps {}
 
     const Navbar: React.FC<NavbarProps> = () => {
         return (
-            <div className={cn(
-                "fixed top-0 left-0 right-0 z-60 flex justify-between items-center p-4",
-                // Add opaque background only after submit
-                status === "streaming" || status === 'ready' ? "bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60" : "bg-background",
-            )}>
+            <div
+                className={cn(
+                    'fixed top-0 left-0 right-0 z-60 flex justify-between items-center p-3',
+                    // Add opaque background only after submit
+                    status === 'streaming' || status === 'ready'
+                        ? 'bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60'
+                        : 'bg-background',
+                )}
+            >
                 <div className="flex items-center gap-4">
                     <Link href="/new">
                         <Button
@@ -248,14 +224,14 @@ const HomeContent = () => {
                             variant={'secondary'}
                             className="rounded-full bg-accent hover:bg-accent/80 backdrop-blur-xs group transition-all hover:scale-105 pointer-events-auto"
                         >
-                            <Plus size={18} className="group-hover:rotate-90 transition-all" />
+                            <Plus size={18} className="group-hover:rotate-90 transition-all m-1.5" />
                             <span className="text-sm ml-2 group-hover:block hidden animate-in fade-in duration-300">
                                 New
                             </span>
                         </Button>
                     </Link>
                 </div>
-                <div className='flex items-center space-x-4'>
+                <div className="flex items-center space-x-4">
                     <Link
                         target="_blank"
                         href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzaidmukaddam%2Fscira&env=XAI_API_KEY,OPENAI_API_KEY,GROQ_API_KEY,E2B_API_KEY,ELEVENLABS_API_KEY,TAVILY_API_KEY,EXA_API_KEY,TMDB_API_KEY,YT_ENDPOINT,FIRECRAWL_API_KEY,OPENWEATHER_API_KEY,SANDBOX_TEMPLATE_ID,GOOGLE_MAPS_API_KEY,MAPBOX_ACCESS_TOKEN,TRIPADVISOR_API_KEY,AVIATION_STACK_API_KEY,BLOB_READ_WRITE_TOKEN,NEXT_PUBLIC_MAPBOX_TOKEN,NEXT_PUBLIC_POSTHOG_KEY,NEXT_PUBLIC_POSTHOG_HOST,NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,MEM0_API_KEY,MEM0_ORG_ID,MEM0_PROJECT_ID,SMITHERY_API_KEY&envDescription=API%20keys%20and%20configuration%20required%20for%20Scira%20to%20function%20(including%20SMITHERY_API_KEY)"
@@ -265,8 +241,8 @@ const HomeContent = () => {
                             transition-all duration-200"
                     >
                         <VercelIcon size={14} />
-                        <span className='hidden sm:block'>Deploy with Vercel</span>
-                        <span className='sm:hidden block'>Deploy</span>
+                        <span className="hidden sm:block">Deploy with Vercel</span>
+                        <span className="sm:hidden block">Deploy</span>
                     </Link>
                     <AboutButton />
                     <ThemeToggle />
@@ -276,14 +252,16 @@ const HomeContent = () => {
     };
 
     // Define the model change handler
-    const handleModelChange = useCallback((model: string) => {
-        setSelectedModel(model);
-    }, [setSelectedModel]);
+    const handleModelChange = useCallback(
+        (model: string) => {
+            setSelectedModel(model);
+        },
+        [setSelectedModel],
+    );
 
     const resetSuggestedQuestions = useCallback(() => {
         setSuggestedQuestions([]);
     }, []);
-
 
     const WidgetSection = memo(() => {
         const [currentTime, setCurrentTime] = useState(new Date());
@@ -320,14 +298,14 @@ const HomeContent = () => {
             weekday: 'short',
             month: 'short',
             day: 'numeric',
-            timeZone: timezone
+            timeZone: timezone,
         });
 
         const timeFormatter = new Intl.DateTimeFormat('en-US', {
             hour: '2-digit',
             minute: '2-digit',
             hour12: true,
-            timeZone: timezone
+            timeZone: timezone,
         });
 
         const formattedDate = dateFormatter.format(currentTime);
@@ -338,7 +316,7 @@ const HomeContent = () => {
 
             append({
                 content: `What's the current date and time?`,
-                role: 'user'
+                role: 'user',
             });
 
             lastSubmittedQueryRef.current = `What's the current date and time?`;
@@ -354,7 +332,10 @@ const HomeContent = () => {
                         className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-xs transition-all h-auto"
                         onClick={handleDateTimeClick}
                     >
-                        <PhosphorClock weight="duotone" className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                        <PhosphorClock
+                            weight="duotone"
+                            className="h-5 w-5 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform"
+                        />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                             {formattedTime}
                         </span>
@@ -366,7 +347,10 @@ const HomeContent = () => {
                         className="group flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:shadow-xs transition-all h-auto"
                         onClick={handleDateTimeClick}
                     >
-                        <CalendarBlank weight="duotone" className="h-5 w-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+                        <CalendarBlank
+                            weight="duotone"
+                            className="h-5 w-5 text-emerald-500 dark:text-emerald-400 group-hover:scale-110 transition-transform"
+                        />
                         <span className="text-sm text-neutral-700 dark:text-neutral-300 font-medium">
                             {formattedDate}
                         </span>
@@ -382,10 +366,13 @@ const HomeContent = () => {
         <div className="flex flex-col font-sans! items-center min-h-screen bg-background text-foreground transition-all duration-500">
             <Navbar />
 
-            <div className={`w-full p-2 sm:p-4 ${status === 'ready' && messages.length === 0
-                ? 'min-h-screen! flex! flex-col! items-center! justify-center!' // Center everything when no messages
-                : 'mt-20! sm:mt-16!' // Add top margin when showing messages
-                }`}>
+            <div
+                className={`w-full p-2 sm:p-4 ${
+                    status === 'ready' && messages.length === 0
+                        ? 'min-h-screen! flex! flex-col! items-center! justify-center!' // Center everything when no messages
+                        : 'mt-20! sm:mt-16!' // Add top margin when showing messages
+                }`}
+            >
                 <div className={`w-full max-w-[26rem] sm:max-w-2xl space-y-6 p-0 mx-auto transition-all duration-300`}>
                     {status === 'ready' && messages.length === 0 && (
                         <div className="text-center">
@@ -454,7 +441,7 @@ const HomeContent = () => {
                             error={error}
                         />
                     )}
-                    
+
                     <div ref={bottomRef} />
                 </div>
 
@@ -494,7 +481,7 @@ const HomeContent = () => {
             </div>
         </div>
     );
-}
+};
 
 const Home = () => {
     return (

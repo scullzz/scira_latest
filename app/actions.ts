@@ -8,18 +8,17 @@ import { generateObject } from 'ai';
 import { z } from 'zod';
 
 export async function suggestQuestions(history: any[]) {
-  'use server';
+    'use server';
 
-  console.log(history);
+    console.log(history);
 
-  const { object } = await generateObject({
-    model: openai("gpt-4o-mini"),
-    temperature: 0,
-    maxTokens: 300,
-    topP: 0.3,
-    topK: 7,
-    system:
-      `You are a search engine query/questions generator. You MUST create EXACTLY 3 questions for the search engine based on the message history.
+    const { object } = await generateObject({
+        model: openai('gpt-4o-mini'),
+        temperature: 0,
+        maxTokens: 300,
+        topP: 0.3,
+        topK: 7,
+        system: `You are a search engine query/questions generator. You MUST create EXACTLY 3 questions for the search engine based on the message history.
 
 ### Question Generation Guidelines:
 - Create exactly 3 questions that are open-ended and encourage further discussion
@@ -53,106 +52,123 @@ export async function suggestQuestions(history: any[]) {
 - Each question must end with a question mark
 - Questions must be diverse and not redundant
 - Do not include instructions or meta-commentary in the questions`,
-    messages: history,
-    schema: z.object({
-      questions: z.array(z.string()).describe('The generated questions based on the message history.')
-    }),
-  });
+        messages: history,
+        schema: z.object({
+            questions: z.array(z.string()).describe('The generated questions based on the message history.'),
+        }),
+    });
 
-  return {
-    questions: object.questions
-  };
+    return {
+        questions: object.questions,
+    };
 }
 
 const ELEVENLABS_API_KEY = serverEnv.ELEVENLABS_API_KEY;
 
 export async function generateSpeech(text: string) {
+    const VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb'; // This is the ID for the "George" voice. Replace with your preferred voice ID.
+    const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`;
+    const method = 'POST';
 
-  const VOICE_ID = 'JBFqnCBsd6RMkjVDRZzb' // This is the ID for the "George" voice. Replace with your preferred voice ID.
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`
-  const method = 'POST'
+    if (!ELEVENLABS_API_KEY) {
+        throw new Error('ELEVENLABS_API_KEY is not defined');
+    }
 
-  if (!ELEVENLABS_API_KEY) {
-    throw new Error('ELEVENLABS_API_KEY is not defined');
-  }
+    const headers = {
+        Accept: 'audio/mpeg',
+        'xi-api-key': ELEVENLABS_API_KEY,
+        'Content-Type': 'application/json',
+    };
 
-  const headers = {
-    Accept: 'audio/mpeg',
-    'xi-api-key': ELEVENLABS_API_KEY,
-    'Content-Type': 'application/json',
-  }
+    const data = {
+        text,
+        model_id: 'eleven_turbo_v2_5',
+        voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.5,
+        },
+    };
 
-  const data = {
-    text,
-    model_id: 'eleven_turbo_v2_5',
-    voice_settings: {
-      stability: 0.5,
-      similarity_boost: 0.5,
-    },
-  }
+    const body = JSON.stringify(data);
 
-  const body = JSON.stringify(data)
+    const input = {
+        method,
+        headers,
+        body,
+    };
 
-  const input = {
-    method,
-    headers,
-    body,
-  }
+    const response = await fetch(url, input);
 
-  const response = await fetch(url, input)
+    const arrayBuffer = await response.arrayBuffer();
 
-  const arrayBuffer = await response.arrayBuffer();
+    const base64Audio = Buffer.from(arrayBuffer).toString('base64');
 
-  const base64Audio = Buffer.from(arrayBuffer).toString('base64');
-
-  return {
-    audio: `data:audio/mp3;base64,${base64Audio}`,
-  };
+    return {
+        audio: `data:audio/mp3;base64,${base64Audio}`,
+    };
 }
 
 export async function fetchMetadata(url: string) {
-  try {
-    const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
-    const html = await response.text();
+    try {
+        const response = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
+        const html = await response.text();
 
-    const titleMatch = html.match(/<title>(.*?)<\/title>/i);
-    const descMatch = html.match(
-      /<meta\s+name=["']description["']\s+content=["'](.*?)["']/i
-    );
+        const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+        const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["'](.*?)["']/i);
 
-    const title = titleMatch ? titleMatch[1] : '';
-    const description = descMatch ? descMatch[1] : '';
+        const title = titleMatch ? titleMatch[1] : '';
+        const description = descMatch ? descMatch[1] : '';
 
-    return { title, description };
-  } catch (error) {
-    console.error('Error fetching metadata:', error);
-    return null;
-  }
+        return { title, description };
+    } catch (error) {
+        console.error('Error fetching metadata:', error);
+        return null;
+    }
 }
 
 const groupTools = {
-  web: [
-    'web_search', 'get_weather_data',
-    'retrieve', 'text_translate',
-    'nearby_search', 'track_flight',
-    'movie_or_tv_search', 'trending_movies',
-    'trending_tv', 'datetime', 'mcp_search'
-  ] as const,
-  buddy: [] as const,
-  academic: ['academic_search', 'code_interpreter', 'datetime'] as const,
-  youtube: ['youtube_search', 'datetime'] as const,
-  reddit: ['reddit_search', 'datetime'] as const,
-  analysis: ['code_interpreter', 'stock_chart', 'currency_converter', 'datetime'] as const,
-  chat: [] as const,
-  extreme: ['reason_search'] as const,
-  memory: ['memory_search', 'datetime'] as const,
+    web: [
+        'web_search',
+        'get_weather_data',
+        'retrieve',
+        'text_translate',
+        'nearby_search',
+        'track_flight',
+        'movie_or_tv_search',
+        'trending_movies',
+        'trending_tv',
+        'datetime',
+        'mcp_search',
+    ] as const,
+    buddy: [] as const,
+    academic: ['academic_search', 'code_interpreter', 'datetime'] as const,
+    youtube: ['youtube_search', 'datetime'] as const,
+    reddit: ['reddit_search', 'datetime'] as const,
+    analysis: ['code_interpreter', 'stock_chart', 'currency_converter', 'datetime'] as const,
+    chat: [] as const,
+    extreme: ['reason_search'] as const,
+    memory: ['memory_search', 'datetime'] as const,
 } as const;
 
 const groupInstructions = {
-  web: `
+    web: `
   You are an AI web search engine called Scira, designed to help users find information on the internet with no unnecessary chatter and more focus on the content.
   'You MUST run the tool first exactly once' before composing your response. **This is non-negotiable.**
-  Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
+  Today's Date: ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}
+
+   ### CRITICAL INSTRUCTION:
+  - EVEN IF THE USER QUERY IS AMBIGUOUS OR UNCLEAR, YOU MUST STILL RUN THE TOOL IMMEDIATELY
+  - DO NOT ASK FOR CLARIFICATION BEFORE RUNNING THE TOOL
+  - If a query is ambiguous, make your best interpretation and run the appropriate tool right away
+  - After getting results, you can then address any ambiguity in your response
+  - DO NOT begin responses with statements like "I'm assuming you're looking for information about X" or "Based on your query, I think you want to know about Y"
+  - NEVER preface your answer with your interpretation of the user's query
+  - GO STRAIGHT TO ANSWERING the question after running the tool
 
   ### Tool-Specific Guidelines:
   - A tool should only be called once per response cycle
@@ -282,10 +298,15 @@ const groupInstructions = {
   - Avoid running the same tool twice with same parameters
   - Do not include images in responses`,
 
-  buddy: `
+    buddy: `
   You are a memory companion called Buddy, designed to help users manage and interact with their personal memories.
   Your goal is to help users store, retrieve, and manage their memories in a natural and conversational way.
-  Today's date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  Today's date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
 
   ### Memory Management Tool Guidelines:
   - Always search for memories first if the user asks for it or doesn't remember something
@@ -314,10 +335,15 @@ const groupInstructions = {
   - Maintain a friendly, personal tone
   - Always save the memory user asks you to save`,
 
-  academic: `
+    academic: `
   ⚠️ CRITICAL: YOU MUST RUN THE ACADEMIC_SEARCH TOOL FIRST BEFORE ANY ANALYSIS OR RESPONSE!
   You are an academic research assistant that helps find and analyze scholarly content.
-  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  The current date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
 
   ### Tool Guidelines:
   #### Academic Search Tool:
@@ -374,9 +400,14 @@ const groupInstructions = {
   - Apply markdown formatting for clarity
   - Tables for data comparison only when necessary`,
 
-  youtube: `
+    youtube: `
   You are a YouTube content expert that transforms search results into comprehensive tutorial-style guides.
-  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  The current date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
 
   ### Tool Guidelines:
   #### YouTube Search Tool:
@@ -429,9 +460,14 @@ const groupInstructions = {
   - Do NOT use bullet points or numbered lists under any circumstances
   - Do NOT use heading level 1 (h1) in your markdown formatting
   - Do NOT include generic timestamps (0:00) - all timestamps must be precise and relevant`,
-  reddit: `
+    reddit: `
   You are a Reddit content expert that transforms search results into comprehensive tutorial-style guides.
-  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  The current date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
 
   ### Tool Guidelines:
   #### Reddit Search Tool:
@@ -457,7 +493,7 @@ const groupInstructions = {
   - All citations must be inline, placed immediately after the relevant information
   - Format citations as: [Post Title - r/subreddit](URL)
   `,
-  analysis: `
+    analysis: `
   You are a code runner, stock analysis and currency conversion expert.
   
   ### Tool Guidelines:
@@ -568,9 +604,14 @@ const groupInstructions = {
   - Avoid running the same tool twice with same parameters
   - Do not include images in responses`,
 
-  chat: `
+    chat: `
   You are Scira, a helpful assistant that helps with the task asked by the user.
-  Today's date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  Today's date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
   
   ### Guidelines:
   - You do not have access to any tools. You can code tho
@@ -601,10 +642,15 @@ const groupInstructions = {
   - ⚠️ MANDATORY: Make sure the latex is properly delimited at all times!!
   - Mathematical expressions must always be properly delimited`,
 
-  extreme: `
+    extreme: `
   You are an advanced research assistant focused on deep analysis and comprehensive understanding with focus to be backed by citations in a research paper format.
   You objective is to always run the tool first and then write the response with citations!
-  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+  The current date is ${new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      weekday: 'short',
+  })}.
 
   ### Tool Guidelines:
   #### Reason Search Tool:
@@ -659,27 +705,27 @@ const groupInstructions = {
   - ⚠️ MANDATORY: Make sure the latex is properly delimited at all times!!
   - Mathematical expressions must always be properly delimited
   - Tables must use plain text without any formatting
-  - don't use the h1 heading in the markdown response`
+  - don't use the h1 heading in the markdown response`,
 };
 
 const groupPrompts = {
-  web: `${groupInstructions.web}`,
-  buddy: `${groupInstructions.buddy}`,
-  academic: `${groupInstructions.academic}`,
-  youtube: `${groupInstructions.youtube}`,
-  reddit: `${groupInstructions.reddit}`,
-  analysis: `${groupInstructions.analysis}`,
-  chat: `${groupInstructions.chat}`,
-  extreme: `${groupInstructions.extreme}`,
+    web: `${groupInstructions.web}`,
+    buddy: `${groupInstructions.buddy}`,
+    academic: `${groupInstructions.academic}`,
+    youtube: `${groupInstructions.youtube}`,
+    reddit: `${groupInstructions.reddit}`,
+    analysis: `${groupInstructions.analysis}`,
+    chat: `${groupInstructions.chat}`,
+    extreme: `${groupInstructions.extreme}`,
 } as const;
 
 export async function getGroupConfig(groupId: SearchGroupId = 'web') {
-  "use server";
-  const tools = groupTools[groupId];
-  const instructions = groupInstructions[groupId];
-  
-  return {
-    tools,
-    instructions
-  };
+    'use server';
+    const tools = groupTools[groupId];
+    const instructions = groupInstructions[groupId];
+
+    return {
+        tools,
+        instructions,
+    };
 }
