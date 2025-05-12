@@ -108,7 +108,6 @@ interface CollapsibleSectionProps {
     status?: 'running' | 'completed';
 }
 
-// Now adding the SearchLoadingState component
 const SearchLoadingState = ({
     icon: Icon,
     text,
