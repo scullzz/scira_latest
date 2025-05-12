@@ -24,7 +24,6 @@ interface BaseChart {
     x_scale?: string;
 }
 
-// Create a memoized chart component to prevent unnecessary rerenders
 const InteractiveChart = React.memo(
     ({ chart }: { chart: BaseChart }) => {
         const { theme } = useTheme();
