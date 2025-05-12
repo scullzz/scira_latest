@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ToolInvocation } from 'ai';
 import { motion } from 'framer-motion';
-import { Wave } from "@foobar404/wave";
+import { Wave } from '@foobar404/wave';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { ArrowUpRight, LucideIcon, User2 } from 'lucide-react';
@@ -13,26 +13,11 @@ import Link from 'next/link';
 // UI Components
 import { BorderTrail } from '@/components/core/border-trail';
 import { TextShimmer } from '@/components/core/text-shimmer';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Icons
@@ -40,6 +25,7 @@ import {
     Book,
     Building,
     ChevronDown,
+    Clock,
     Cloud,
     Copy,
     ExternalLink,
@@ -54,6 +40,7 @@ import {
     TextIcon,
     TrendingUpIcon,
     Tv,
+    XCircle,
     YoutubeIcon,
 } from 'lucide-react';
 import { Memory, Clock as PhosphorClock, RedditLogo, RoadHorizon } from '@phosphor-icons/react';
@@ -78,7 +65,6 @@ import RedditSearch from '@/components/reddit-search';
 // Actions
 import { generateSpeech } from '@/app/actions';
 import Image from 'next/image';
-
 
 // Interfaces
 interface VideoDetails {
@@ -126,83 +112,70 @@ interface CollapsibleSectionProps {
 const SearchLoadingState = ({
     icon: Icon,
     text,
-    color
+    color,
 }: {
-    icon: LucideIcon,
-    text: string,
-    color: "red" | "green" | "orange" | "violet" | "gray" | "blue"
+    icon: LucideIcon;
+    text: string;
+    color: 'red' | 'green' | 'orange' | 'violet' | 'gray' | 'blue';
 }) => {
     const colorVariants = {
         red: {
-            background: "bg-red-50 dark:bg-red-950",
-            border: "from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700",
-            text: "text-red-500",
-            icon: "text-red-500"
+            background: 'bg-red-50 dark:bg-red-950',
+            border: 'from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700',
+            text: 'text-red-500',
+            icon: 'text-red-500',
         },
         green: {
-            background: "bg-green-50 dark:bg-green-950",
-            border: "from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700",
-            text: "text-green-500",
-            icon: "text-green-500"
+            background: 'bg-green-50 dark:bg-green-950',
+            border: 'from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700',
+            text: 'text-green-500',
+            icon: 'text-green-500',
         },
         orange: {
-            background: "bg-orange-50 dark:bg-orange-950",
-            border: "from-orange-200 via-orange-500 to-orange-200 dark:from-orange-400 dark:via-orange-500 dark:to-orange-700",
-            text: "text-orange-500",
-            icon: "text-orange-500"
+            background: 'bg-orange-50 dark:bg-orange-950',
+            border: 'from-orange-200 via-orange-500 to-orange-200 dark:from-orange-400 dark:via-orange-500 dark:to-orange-700',
+            text: 'text-orange-500',
+            icon: 'text-orange-500',
         },
         violet: {
-            background: "bg-violet-50 dark:bg-violet-950",
-            border: "from-violet-200 via-violet-500 to-violet-200 dark:from-violet-400 dark:via-violet-500 dark:to-violet-700",
-            text: "text-violet-500",
-            icon: "text-violet-500"
+            background: 'bg-violet-50 dark:bg-violet-950',
+            border: 'from-violet-200 via-violet-500 to-violet-200 dark:from-violet-400 dark:via-violet-500 dark:to-violet-700',
+            text: 'text-violet-500',
+            icon: 'text-violet-500',
         },
         gray: {
-            background: "bg-neutral-50 dark:bg-neutral-950",
-            border: "from-neutral-200 via-neutral-500 to-neutral-200 dark:from-neutral-400 dark:via-neutral-500 dark:to-neutral-700",
-            text: "text-neutral-500",
-            icon: "text-neutral-500"
+            background: 'bg-neutral-50 dark:bg-neutral-950',
+            border: 'from-neutral-200 via-neutral-500 to-neutral-200 dark:from-neutral-400 dark:via-neutral-500 dark:to-neutral-700',
+            text: 'text-neutral-500',
+            icon: 'text-neutral-500',
         },
         blue: {
-            background: "bg-blue-50 dark:bg-blue-950",
-            border: "from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700",
-            text: "text-blue-500",
-            icon: "text-blue-500"
-        }
+            background: 'bg-blue-50 dark:bg-blue-950',
+            border: 'from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700',
+            text: 'text-blue-500',
+            icon: 'text-blue-500',
+        },
     };
 
     const variant = colorVariants[color];
 
     return (
         <Card className="relative w-full h-[100px] my-4 overflow-hidden shadow-none">
-            <BorderTrail
-                className={cn(
-                    'bg-linear-to-l',
-                    variant.border
-                )}
-                size={80}
-            />
+            <BorderTrail className={cn('bg-linear-to-l', variant.border)} size={80} />
             <CardContent className="px-6!">
                 <div className="relative flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "relative h-10 w-10 rounded-full flex items-center justify-center",
-                            variant.background
-                        )}>
-                            <BorderTrail
-                                className={cn(
-                                    "bg-linear-to-l",
-                                    variant.border
-                                )}
-                                size={40}
-                            />
-                            <Icon className={cn("h-5 w-5", variant.icon)} />
+                        <div
+                            className={cn(
+                                'relative h-10 w-10 rounded-full flex items-center justify-center',
+                                variant.background,
+                            )}
+                        >
+                            <BorderTrail className={cn('bg-linear-to-l', variant.border)} size={40} />
+                            <Icon className={cn('h-5 w-5', variant.icon)} />
                         </div>
                         <div className="space-y-2">
-                            <TextShimmer
-                                className="text-base font-medium"
-                                duration={2}
-                            >
+                            <TextShimmer className="text-base font-medium" duration={2}>
                                 {text}
                             </TextShimmer>
                             <div className="flex gap-2">
@@ -212,7 +185,7 @@ const SearchLoadingState = ({
                                         className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse"
                                         style={{
                                             width: `${Math.random() * 40 + 20}px`,
-                                            animationDelay: `${i * 0.2}s`
+                                            animationDelay: `${i * 0.2}s`,
                                         }}
                                     />
                                 ))}
@@ -237,7 +210,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
             const [_, time, description] = match;
             return { time, description };
         }
-        return { time: "", description: timestamp };
+        return { time: '', description: timestamp };
     };
 
     // Prevent event propagation to allow scrolling during streaming
@@ -310,7 +283,7 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                     )}
                 </div>
 
-                {(video.timestamps && video.timestamps?.length > 0 || video.captions) && (
+                {((video.timestamps && video.timestamps?.length > 0) || video.captions) && (
                     <div className="mt-1">
                         <Accordion type="single" collapsible>
                             <AccordionItem value="details" className="border-none">
@@ -322,7 +295,9 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                                 <AccordionContent>
                                     {video.timestamps && video.timestamps.length > 0 && (
                                         <div className="mt-2 space-y-1.5">
-                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">Key Moments</h4>
+                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">
+                                                Key Moments
+                                            </h4>
                                             <ScrollArea className="h-[120px]">
                                                 <div className="pr-4">
                                                     {video.timestamps.map((timestamp, i) => {
@@ -330,21 +305,33 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
                                                         return (
                                                             <Link
                                                                 key={i}
-                                                                href={`${video.url}&t=${time.split(':').reduce((acc, time, i, arr) => {
-                                                                    if (arr.length === 2) { // MM:SS format
-                                                                        return i === 0 ? acc + parseInt(time) * 60 : acc + parseInt(time);
-                                                                    } else { // HH:MM:SS format
-                                                                        return i === 0 ? acc + parseInt(time) * 3600 :
-                                                                            i === 1 ? acc + parseInt(time) * 60 :
-                                                                                acc + parseInt(time);
-                                                                    }
-                                                                }, 0)}`}
+                                                                href={`${video.url}&t=${time
+                                                                    .split(':')
+                                                                    .reduce((acc, time, i, arr) => {
+                                                                        if (arr.length === 2) {
+                                                                            // MM:SS format
+                                                                            return i === 0
+                                                                                ? acc + parseInt(time) * 60
+                                                                                : acc + parseInt(time);
+                                                                        } else {
+                                                                            // HH:MM:SS format
+                                                                            return i === 0
+                                                                                ? acc + parseInt(time) * 3600
+                                                                                : i === 1
+                                                                                ? acc + parseInt(time) * 60
+                                                                                : acc + parseInt(time);
+                                                                        }
+                                                                    }, 0)}`}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="flex items-start gap-2 py-1 px-1.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                                                             >
-                                                                <span className="text-xs font-medium text-red-500 whitespace-nowrap">{time}</span>
-                                                                <span className="text-xs text-neutral-700 dark:text-neutral-300 line-clamp-1">{description}</span>
+                                                                <span className="text-xs font-medium text-red-500 whitespace-nowrap">
+                                                                    {time}
+                                                                </span>
+                                                                <span className="text-xs text-neutral-700 dark:text-neutral-300 line-clamp-1">
+                                                                    {description}
+                                                                </span>
                                                             </Link>
                                                         );
                                                     })}
@@ -355,12 +342,12 @@ const YouTubeCard: React.FC<YouTubeCardProps> = ({ video, index }) => {
 
                                     {video.captions && (
                                         <div className="mt-3 space-y-1.5">
-                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">Transcript</h4>
+                                            <h4 className="text-xs font-semibold dark:text-neutral-300 text-neutral-700">
+                                                Transcript
+                                            </h4>
                                             <ScrollArea className="h-[120px]">
                                                 <div className="text-xs dark:text-neutral-400 text-neutral-600 rounded bg-neutral-50 dark:bg-neutral-800 p-2">
-                                                    <p className="whitespace-pre-wrap">
-                                                        {video.captions}
-                                                    </p>
+                                                    <p className="whitespace-pre-wrap">{video.captions}</p>
                                                 </div>
                                             </ScrollArea>
                                         </div>
@@ -386,91 +373,157 @@ const MemoizedYouTubeCard = React.memo(YouTubeCard, (prevProps, nextProps) => {
     );
 });
 
-// Also adding the CollapsibleSection component needed by ToolInvocationListView
-function CollapsibleSection({
-    code,
-    output,
-    language = "plaintext",
-    title,
-    icon,
-    status,
-}: CollapsibleSectionProps) {
-    const [copied, setCopied] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(true);
-    const [activeTab, setActiveTab] = useState<'code' | 'output'>('code');
+// Modern code interpreter components
+const LineNumbers = memo(({ count }: { count: number }) => (
+    <div className="hidden sm:block select-none w-8 sm:w-10 flex-shrink-0 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800/30 py-0">
+        {Array.from({ length: count }, (_, i) => (
+            <div
+                key={i}
+                className="text-[10px] h-[20px] flex items-center justify-end text-neutral-500 dark:text-neutral-400 pr-2 font-mono"
+            >
+                {i + 1}
+            </div>
+        ))}
+    </div>
+));
+LineNumbers.displayName = 'LineNumbers';
 
-    const handleCopy = async (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const textToCopy = activeTab === 'code' ? code : output;
-        await navigator.clipboard.writeText(textToCopy || '');
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+const StatusBadge = memo(({ status }: { status: 'running' | 'completed' | 'error' }) => {
+    if (status === 'completed') return null;
+
+    if (status === 'error') {
+        return (
+            <div className="flex items-center gap-1 text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded-md text-[9px] font-medium">
+                <XCircle className="h-2.5 w-2.5" />
+                <span className="hidden sm:inline">Error</span>
+            </div>
+        );
+    }
 
     return (
-        <div className="group rounded-lg border border-neutral-200 dark:border-neutral-800 overflow-hidden transition-all duration-200 hover:shadow-xs">
-            <div 
-                className="flex items-center justify-between p-4 cursor-pointer"
-                onClick={() => setIsExpanded(!isExpanded)}
-            >
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
-                        {status === 'running' ? (
-                            <Loader2 className="h-4 w-4 text-neutral-500 animate-spin" />
-                        ) : (
-                            <Code className="h-4 w-4 text-neutral-500" />
-                        )}
+        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-500/20">
+            <Loader2 className="h-2.5 w-2.5 animate-spin text-blue-500" />
+            <span className="hidden sm:inline text-[9px] font-medium text-blue-600 dark:text-blue-400">Running</span>
+        </div>
+    );
+});
+StatusBadge.displayName = 'StatusBadge';
+
+const CodeBlock = memo(({ code, language }: { code: string; language: string }) => {
+    const lines = code.split('\n');
+    return (
+        <div className="flex bg-neutral-50 dark:bg-neutral-900/70">
+            <LineNumbers count={lines.length} />
+            <div className="overflow-x-auto w-full">
+                <pre className="py-0 px-2 sm:px-3 m-0 font-mono text-[11px] sm:text-xs leading-[20px] text-neutral-800 dark:text-neutral-300">
+                    {code}
+                </pre>
+            </div>
+        </div>
+    );
+});
+CodeBlock.displayName = 'CodeBlock';
+
+const OutputBlock = memo(({ output, error }: { output?: string; error?: string }) => {
+    if (!output && !error) return null;
+
+    return (
+        <div
+            className={cn(
+                'font-mono text-[11px] sm:text-xs leading-[20px] py-0 px-2 sm:px-3',
+                error
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    : 'bg-neutral-100 dark:bg-neutral-800/50 text-neutral-700 dark:text-neutral-300',
+            )}
+        >
+            <pre className="whitespace-pre-wrap overflow-x-auto">{error || output}</pre>
+        </div>
+    );
+});
+OutputBlock.displayName = 'OutputBlock';
+
+function CodeInterpreterView({
+    code,
+    output,
+    language = 'python',
+    title,
+    status,
+    error,
+}: {
+    code: string;
+    output?: string;
+    language?: string;
+    title?: string;
+    status?: 'running' | 'completed' | 'error';
+    error?: string;
+}) {
+    // Set initial state based on status - expanded while running, collapsed when complete
+    const [isExpanded, setIsExpanded] = useState(status !== 'completed');
+
+    // Update expanded state when status changes
+    useEffect(() => {
+        // If status changes to completed, collapse the code section
+        if (status === 'completed' && (output || error)) {
+            setIsExpanded(false);
+        }
+        // Keep expanded during running or error states
+        else if (status === 'running' || status === 'error') {
+            setIsExpanded(true);
+        }
+    }, [status, output, error]);
+
+    return (
+        <div className="group overflow-hidden bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-sm transition-all duration-200 hover:shadow">
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between px-2.5 sm:px-3 py-2 bg-neutral-50 dark:bg-neutral-800/30 border-b border-neutral-200 dark:border-neutral-800 gap-2">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0.5 rounded-md bg-neutral-100 dark:bg-neutral-700/50">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                        <div className="text-[9px] font-medium font-mono text-neutral-500 dark:text-neutral-400 uppercase">
+                            {language}
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-sm font-medium">{title || "Code"}</h3>
-                        <p className="text-xs text-neutral-500">{status === 'running' ? 'Running...' : 'Completed'}</p>
-                    </div>
+                    <h3 className="text-xs font-medium text-neutral-700 dark:text-neutral-200 truncate max-w-[160px] sm:max-w-xs">
+                        {title || 'Code Execution'}
+                    </h3>
+                    <StatusBadge status={status || 'completed'} />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-1.5 ml-auto">
+                    <CopyButton text={code} />
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
-                        onClick={handleCopy}
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="h-6 w-6 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
                     >
-                        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        <ChevronDown
+                            className={cn(
+                                'h-3.5 w-3.5 transition-transform duration-200',
+                                isExpanded ? 'rotate-180' : '',
+                            )}
+                        />
                     </Button>
-                    <ChevronDown
-                        className={`h-5 w-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                    />
                 </div>
             </div>
+
+            {/* Content */}
             {isExpanded && (
-                <div className="border-t border-neutral-200 dark:border-neutral-800">
-                    <div className="flex items-center border-b border-neutral-200 dark:border-neutral-800">
-                        <button
-                            onClick={() => setActiveTab('code')}
-                            className={`px-4 py-2 text-sm font-medium ${
-                                activeTab === 'code'
-                                    ? 'text-neutral-900 dark:text-neutral-100 border-b-2 border-primary'
-                                    : 'text-neutral-500'
-                            }`}
-                        >
-                            Code
-                        </button>
-                        {output && (
-                            <button
-                                onClick={() => setActiveTab('output')}
-                                className={`px-4 py-2 text-sm font-medium ${
-                                    activeTab === 'output'
-                                        ? 'text-neutral-900 dark:text-neutral-100 border-b-2 border-primary'
-                                        : 'text-neutral-500'
-                                }`}
-                            >
-                                Output
-                            </button>
-                        )}
+                <div>
+                    <div className="max-w-full overflow-x-auto max-h-60 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+                        <CodeBlock code={code} language={language} />
                     </div>
-                    <div className="max-h-[500px] overflow-auto p-4 bg-neutral-50 dark:bg-neutral-900">
-                        <pre className="text-sm whitespace-pre-wrap overflow-x-auto">
-                            {activeTab === 'code' ? code : output}
-                        </pre>
-                    </div>
+                    {(output || error) && (
+                        <>
+                            <div className="border-t border-neutral-200 dark:border-neutral-800 px-2.5 sm:px-3 py-1.5 bg-neutral-50 dark:bg-neutral-800/30">
+                                <div className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">
+                                    {error ? 'Error Output' : 'Execution Result'}
+                                </div>
+                            </div>
+                            <div className="max-w-full overflow-x-auto max-h-60 scrollbar-thin scrollbar-thumb-neutral-300 dark:scrollbar-thumb-neutral-700 scrollbar-track-transparent">
+                                <OutputBlock output={output} error={error} />
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>
@@ -479,16 +532,16 @@ function CollapsibleSection({
 
 // Missing icon reference in CollapsibleSection
 const Code = ({ className }: { className?: string }) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         className={className}
     >
         <polyline points="16 18 22 12 16 6"></polyline>
@@ -498,23 +551,50 @@ const Code = ({ className }: { className?: string }) => (
 
 // Missing icon reference in CollapsibleSection
 const Check = ({ className }: { className?: string }) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="24" 
-        height="24" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         className={className}
     >
         <polyline points="20 6 9 17 4 12"></polyline>
     </svg>
 );
 
-// Now let's add the ToolInvocationListView 
+const CopyButton = memo(({ text }: { text: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleCopy}
+            className={cn(
+                'h-7 w-7 transition-colors duration-150',
+                copied
+                    ? 'text-green-500'
+                    : 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100',
+            )}
+        >
+            {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+        </Button>
+    );
+});
+CopyButton.displayName = 'CopyButton';
+
+// Now let's add the ToolInvocationListView
 const ToolInvocationListView = memo(
     ({ toolInvocations, message }: { toolInvocations: ToolInvocation[]; message: any }) => {
         const renderToolInvocation = useCallback(
@@ -524,11 +604,7 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'find_place') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={MapPin}
-                            text="Finding locations..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={MapPin} text="Finding locations..." color="blue" />;
                     }
 
                     const { features } = result;
@@ -571,13 +647,15 @@ const ToolInvocationListView = memo(
                                         <div
                                             key={place.id || index}
                                             className={cn(
-                                                "p-4",
-                                                index !== features.length - 1 && "border-b border-neutral-200 dark:border-neutral-800"
+                                                'p-4',
+                                                index !== features.length - 1 &&
+                                                    'border-b border-neutral-200 dark:border-neutral-800',
                                             )}
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="h-12 w-12 rounded-xl bg-linear-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center">
-                                                    {place.feature_type === 'street_address' || place.feature_type === 'street' ? (
+                                                    {place.feature_type === 'street_address' ||
+                                                    place.feature_type === 'street' ? (
                                                         <RoadHorizon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                                                     ) : place.feature_type === 'locality' ? (
                                                         <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -610,7 +688,7 @@ const ToolInvocationListView = memo(
                                                                     onClick={() => {
                                                                         const coords = `${place.geometry.coordinates[1]},${place.geometry.coordinates[0]}`;
                                                                         navigator.clipboard.writeText(coords);
-                                                                        toast.success("Coordinates copied!");
+                                                                        toast.success('Coordinates copied!');
                                                                     }}
                                                                     className="h-10 w-10"
                                                                 >
@@ -653,11 +731,13 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'movie_or_tv_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Film}
-                            text="Discovering entertainment content..."
-                            color="violet"
-                        />;
+                        return (
+                            <SearchLoadingState
+                                icon={Film}
+                                text="Discovering entertainment content..."
+                                color="violet"
+                            />
+                        );
                     }
 
                     return <TMDBResult result={result} />;
@@ -665,42 +745,28 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'trending_movies') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Film}
-                            text="Loading trending movies..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={Film} text="Loading trending movies..." color="blue" />;
                     }
                     return <TrendingResults result={result} type="movie" />;
                 }
 
                 if (toolInvocation.toolName === 'trending_tv') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Tv}
-                            text="Loading trending TV shows..."
-                            color="blue"
-                        />;
+                        return <SearchLoadingState icon={Tv} text="Loading trending TV shows..." color="blue" />;
                     }
                     return <TrendingResults result={result} type="tv" />;
                 }
 
                 if (toolInvocation.toolName === 'youtube_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={YoutubeIcon}
-                            text="Searching YouTube videos..."
-                            color="red"
-                        />;
+                        return <SearchLoadingState icon={YoutubeIcon} text="Searching YouTube videos..." color="red" />;
                     }
 
                     const youtubeResult = result as YouTubeSearchResponse;
 
                     // Filter out videos with no meaningful content
-                    const filteredVideos = youtubeResult.results.filter(video =>
-                        (video.timestamps && video.timestamps.length > 0) ||
-                        video.captions ||
-                        video.summary
+                    const filteredVideos = youtubeResult.results.filter(
+                        (video) => (video.timestamps && video.timestamps.length > 0) || video.captions || video.summary,
                     );
 
                     // If no videos with content, show a message instead
@@ -727,7 +793,10 @@ const ToolInvocationListView = memo(
                     return (
                         <div className="w-full my-4">
                             <Accordion type="single" collapsible defaultValue="videos">
-                                <AccordionItem value="videos" className="border dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 shadow-xs">
+                                <AccordionItem
+                                    value="videos"
+                                    className="border dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 shadow-xs"
+                                >
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
                                         <div className="flex items-center gap-3">
                                             <div className="flex items-center justify-center h-9 w-9 rounded-full bg-red-50 dark:bg-red-950/30">
@@ -738,7 +807,10 @@ const ToolInvocationListView = memo(
                                                     YouTube Results
                                                 </h2>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <Badge variant="secondary" className="px-2 py-0 h-5 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className="px-2 py-0 h-5 text-xs font-medium bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400"
+                                                    >
                                                         {filteredVideos.length} videos with content
                                                     </Badge>
                                                 </div>
@@ -771,11 +843,7 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'academic_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={Book}
-                            text="Searching academic papers..."
-                            color="violet"
-                        />;
+                        return <SearchLoadingState icon={Book} text="Searching academic papers..." color="violet" />;
                     }
 
                     return <AcademicPapersCard results={result.results} />;
@@ -802,7 +870,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -815,11 +883,7 @@ const ToolInvocationListView = memo(
 
                     return (
                         <div className="my-4">
-                            <NearbySearchMapView
-                                center={result.center}
-                                places={result.results}
-                                type={args.type}
-                            />
+                            <NearbySearchMapView center={result.center} places={result.results} type={args.type} />
                         </div>
                     );
                 }
@@ -828,9 +892,11 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return (
                             <div className="flex items-center justify-between w-full">
-                                <div className='flex items-center gap-2'>
+                                <div className="flex items-center gap-2">
                                     <MapPin className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Searching places...</span>
+                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">
+                                        Searching places...
+                                    </span>
                                 </div>
                                 <motion.div className="flex space-x-1">
                                     {[0, 1, 2].map((index) => (
@@ -843,7 +909,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -860,7 +926,7 @@ const ToolInvocationListView = memo(
                             places={result.results.map((place: any) => ({
                                 name: place.name,
                                 location: place.geometry.location,
-                                vicinity: place.formatted_address
+                                vicinity: place.formatted_address,
                             }))}
                         />
                     );
@@ -869,28 +935,59 @@ const ToolInvocationListView = memo(
                 if (toolInvocation.toolName === 'get_weather_data') {
                     if (!result) {
                         return (
-                            <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                    <Cloud className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Fetching weather data...</span>
-                                </div>
-                                <div className="flex space-x-1">
-                                    {[0, 1, 2].map((index) => (
-                                        <motion.div
-                                            key={index}
-                                            className="w-2 h-2 bg-neutral-400 dark:bg-neutral-600 rounded-full"
-                                            initial={{ opacity: 0.3 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{
-                                                repeat: Infinity,
-                                                duration: 0.8,
-                                                delay: index * 0.2,
-                                                repeatType: "reverse",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
+                            <Card className="my-2 py-0 shadow-none bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 gap-0">
+                                <CardHeader className="py-2 px-3 sm:px-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="h-5 w-32 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
+                                            <div className="flex items-center mt-1 gap-2">
+                                                <div className="h-4 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                                                <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center ml-4">
+                                            <div className="text-right">
+                                                <div className="h-8 w-16 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
+                                                <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-md mt-1 animate-pulse" />
+                                            </div>
+                                            <div className="h-12 w-12 flex items-center justify-center ml-2">
+                                                <Cloud className="h-8 w-8 text-neutral-300 dark:text-neutral-700 animate-pulse" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5 mt-3">
+                                        {[...Array(4)].map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className="h-7 w-28 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse"
+                                            />
+                                        ))}
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="px-3 sm:px-4">
+                                        <div className="h-8 w-full bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse mb-4" />
+                                        <div className="h-[180px] w-full bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse" />
+                                        <div className="flex justify-between mt-4 pb-4 overflow-x-auto no-scrollbar">
+                                            {[...Array(5)].map((_, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="flex flex-col items-center min-w-[60px] sm:min-w-[70px] p-1.5 sm:p-2 mx-0.5"
+                                                >
+                                                    <div className="h-4 w-12 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2" />
+                                                    <div className="h-8 w-8 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse mb-2" />
+                                                    <div className="h-3 w-8 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="border-t border-neutral-200 dark:border-neutral-800 py-0! px-4 m-0!">
+                                    <div className="w-full flex justify-end items-center py-1">
+                                        <div className="h-3 w-32 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
+                                    </div>
+                                </CardFooter>
+                            </Card>
                         );
                     }
                     return <WeatherChart result={result} />;
@@ -908,9 +1005,10 @@ const ToolInvocationListView = memo(
                                 <Badge
                                     variant="secondary"
                                     className={cn(
-                                        "w-fit flex items-center gap-3 px-4 py-2 rounded-full transition-colors duration-200",
-                                        "bg-blue-200 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                                    )}>
+                                        'w-fit flex items-center gap-3 px-4 py-2 rounded-full transition-colors duration-200',
+                                        'bg-blue-200 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+                                    )}
+                                >
                                     <TrendingUpIcon className="h-4 w-4" />
                                     <span className="font-medium">{args.title}</span>
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -923,7 +1021,7 @@ const ToolInvocationListView = memo(
                                         title={args.title}
                                         chart={{
                                             ...result.chart,
-                                            x_scale: 'datetime'
+                                            x_scale: 'datetime',
                                         }}
                                         data={result.chart.elements}
                                         stock_symbols={args.stock_symbols}
@@ -937,20 +1035,48 @@ const ToolInvocationListView = memo(
                     );
                 }
 
-                if (toolInvocation.toolName === "code_interpreter") {
+                if (toolInvocation.toolName === 'code_interpreter') {
+                    // Example code for creating charts (useful for reference but not shown to user):
+                    //
+                    // # For pie charts:
+                    // chart_data = {
+                    //     "type": "pie",
+                    //     "title": "Distribution of Values",
+                    //     "elements": [
+                    //         {"label": "Category A", "value": 30},
+                    //         {"label": "Category B", "value": 20},
+                    //         {"label": "Category C", "value": 15},
+                    //         {"label": "Category D", "value": 35}
+                    //     ]
+                    // }
+                    // return {"message": "Chart generated successfully", "chart": chart_data}
+                    //
+                    // # For line charts:
+                    // chart_data = {
+                    //     "type": "line",
+                    //     "title": "Temperature Trends",
+                    //     "x_label": "Date",
+                    //     "y_label": "Temperature (°C)",
+                    //     "elements": [
+                    //         {"label": "Tokyo", "points": [["2023-01", 7], ["2023-02", 8], ["2023-03", 12]]},
+                    //         {"label": "New York", "points": [["2023-01", 2], ["2023-02", 3], ["2023-03", 7]]}
+                    //     ]
+                    // }
+                    // return {"message": "Chart generated successfully", "chart": chart_data}
+
                     return (
-                        <div className="space-y-6">
-                            <CollapsibleSection
+                        <div className="space-y-3 w-full overflow-hidden">
+                            <CodeInterpreterView
                                 code={args.code}
                                 output={result?.message}
+                                error={result?.error}
                                 language="python"
-                                title={args.title}
-                                icon={args.icon || 'default'}
-                                status={result ? 'completed' : 'running'}
+                                title={args.title || 'Code Execution'}
+                                status={result?.error ? 'error' : result ? 'completed' : 'running'}
                             />
 
                             {result?.chart && (
-                                <div className="pt-1">
+                                <div className="pt-1 overflow-x-auto">
                                     <InteractiveChart chart={result.chart} />
                                 </div>
                             )}
@@ -959,9 +1085,9 @@ const ToolInvocationListView = memo(
                 }
 
                 if (toolInvocation.toolName === 'reason_search') {
-                    const updates = message?.annotations?.filter((a: any) =>
-                        a.type === 'research_update'
-                    ).map((a: any) => a.data);
+                    const updates = message?.annotations
+                        ?.filter((a: any) => a.type === 'research_update')
+                        .map((a: any) => a.data);
                     return <ReasonSearch updates={updates || []} />;
                 }
 
@@ -971,9 +1097,9 @@ const ToolInvocationListView = memo(
                             <MultiSearch
                                 result={result}
                                 args={args}
-                                annotations={message?.annotations?.filter(
-                                    (a: any) => a.type === 'query_completion'
-                                ) || []}
+                                annotations={
+                                    message?.annotations?.filter((a: any) => a.type === 'query_completion') || []
+                                }
                             />
                         </div>
                     );
@@ -1022,7 +1148,8 @@ const ToolInvocationListView = memo(
 
                     // Update the error message UI with better dark mode border visibility
                     if (result.error || (result.results && result.results[0] && result.results[0].error)) {
-                        const errorMessage = result.error || (result.results && result.results[0] && result.results[0].error);
+                        const errorMessage =
+                            result.error || (result.results && result.results[0] && result.results[0].error);
                         return (
                             <div className="border border-red-200 dark:border-red-500 rounded-xl my-4 p-4 bg-red-50 dark:bg-red-950/50">
                                 <div className="flex items-center gap-3">
@@ -1064,9 +1191,9 @@ const ToolInvocationListView = memo(
                             {result.results[0].image && (
                                 <div className="h-36 overflow-hidden relative">
                                     <Image
-                                        src={result.results[0].image} 
-                                        alt={result.results[0].title || "Featured image"} 
-                                        className="w-full h-full object-cover" 
+                                        src={result.results[0].image}
+                                        alt={result.results[0].title || 'Featured image'}
+                                        className="w-full h-full object-cover"
                                         width={128}
                                         height={128}
                                         quality={100}
@@ -1091,20 +1218,25 @@ const ToolInvocationListView = memo(
                                                 quality={100}
                                                 unoptimized
                                                 onError={(e) => {
-                                                    e.currentTarget.src = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(result.results[0].url)}`;
+                                                    e.currentTarget.src = `https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
+                                                        result.results[0].url,
+                                                    )}`;
                                                 }}
                                             />
                                         ) : (
                                             <Image
                                                 className="w-full h-full object-contain rounded-lg"
-                                                src={`https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(result.results[0].url)}`}
-                                                alt="" 
+                                                src={`https://www.google.com/s2/favicons?sz=64&domain_url=${encodeURIComponent(
+                                                    result.results[0].url,
+                                                )}`}
+                                                alt=""
                                                 width={64}
                                                 height={64}
                                                 quality={100}
                                                 unoptimized
                                                 onError={(e) => {
-                                                    e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.938 11h3.965a8.008 8.008 0 0 0-5.648-6.667z' fill='rgba(128,128,128,0.5)'/%3E%3C/svg%3E";
+                                                    e.currentTarget.src =
+                                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='none' d='M0 0h24v24H0z'/%3E%3Cpath d='M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.938 11h3.965a8.008 8.008 0 0 0-5.648-6.667z' fill='rgba(128,128,128,0.5)'/%3E%3C/svg%3E";
                                                 }}
                                             />
                                         )}
@@ -1120,22 +1252,31 @@ const ToolInvocationListView = memo(
                                                 </p>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="flex flex-wrap items-center gap-2 mt-2">
                                             {result.results[0].author && (
-                                                <Badge variant="secondary" className="rounded-md bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/20 dark:hover:bg-violet-900/30 text-violet-600 dark:text-violet-400 border-0 transition-colors">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="rounded-md bg-violet-50 hover:bg-violet-100 dark:bg-violet-900/20 dark:hover:bg-violet-900/30 text-violet-600 dark:text-violet-400 border-0 transition-colors"
+                                                >
                                                     <User2 className="h-3 w-3 mr-1" />
                                                     {result.results[0].author}
                                                 </Badge>
                                             )}
                                             {result.results[0].publishedDate && (
-                                                <Badge variant="secondary" className="rounded-md bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-0 transition-colors">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="rounded-md bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-0 transition-colors"
+                                                >
                                                     <PhosphorClock className="h-3 w-3 mr-1" />
                                                     {new Date(result.results[0].publishedDate).toLocaleDateString()}
                                                 </Badge>
                                             )}
                                             {result.response_time && (
-                                                <Badge variant="secondary" className="rounded-md bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-0 transition-colors">
+                                                <Badge
+                                                    variant="secondary"
+                                                    className="rounded-md bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-0 transition-colors"
+                                                >
                                                     <Server className="h-3 w-3 mr-1" />
                                                     {result.response_time.toFixed(1)}s
                                                 </Badge>
@@ -1147,10 +1288,13 @@ const ToolInvocationListView = memo(
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-3 line-clamp-2">
                                     {result.results[0].description || 'No description available'}
                                 </p>
-                                
+
                                 <div className="mt-3 flex justify-between items-center gap-3">
                                     <div className="flex items-center gap-2">
-                                        <Badge variant="secondary" className="rounded-md bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-0 transition-colors cursor-pointer">
+                                        <Badge
+                                            variant="secondary"
+                                            className="rounded-md bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-0 transition-colors cursor-pointer"
+                                        >
                                             <a
                                                 href={result.results[0].url}
                                                 target="_blank"
@@ -1161,16 +1305,22 @@ const ToolInvocationListView = memo(
                                                 View source
                                             </a>
                                         </Badge>
-                                        
+
                                         {result.results.length > 1 && (
-                                            <Badge variant="secondary" className="rounded-md bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-0 transition-colors">
+                                            <Badge
+                                                variant="secondary"
+                                                className="rounded-md bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/30 text-amber-600 dark:text-amber-400 border-0 transition-colors"
+                                            >
                                                 <TextIcon className="h-3 w-3 mr-1" />
                                                 {result.results.length} pages
                                             </Badge>
                                         )}
                                     </div>
-                                    
-                                    <Badge variant="secondary" className="rounded-md bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 border-0 transition-colors">
+
+                                    <Badge
+                                        variant="secondary"
+                                        className="rounded-md bg-neutral-50 hover:bg-neutral-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 border-0 transition-colors"
+                                    >
                                         <Globe className="h-3 w-3 mr-1" />
                                         {new URL(result.results[0].url).hostname.replace('www.', '')}
                                     </Badge>
@@ -1184,13 +1334,19 @@ const ToolInvocationListView = memo(
                                             <AccordionTrigger className="group px-4 py-3 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors no-underline! rounded-t-none! data-[state=open]:rounded-b-none! data-[state=open]:bg-neutral-50 dark:data-[state=open]:bg-neutral-800/50 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:text-neutral-500 [&>svg]:transition-transform [&>svg]:duration-200">
                                                 <div className="flex items-center gap-2">
                                                     <TextIcon className="h-3.5 w-3.5 text-neutral-400" />
-                                                    <span>{index === 0 ? "View full content" : `Additional content ${index + 1}`}</span>
+                                                    <span>
+                                                        {index === 0
+                                                            ? 'View full content'
+                                                            : `Additional content ${index + 1}`}
+                                                    </span>
                                                 </div>
                                             </AccordionTrigger>
                                             <AccordionContent className="pb-0">
                                                 <div className="max-h-[50vh] overflow-y-auto p-4 bg-neutral-50 dark:bg-neutral-800/50 border-t border-neutral-200 dark:border-neutral-700">
                                                     <div className="prose prose-neutral dark:prose-invert prose-sm max-w-none">
-                                                        <ReactMarkdown>{resultItem.content || 'No content available'}</ReactMarkdown>
+                                                        <ReactMarkdown>
+                                                            {resultItem.content || 'No content available'}
+                                                        </ReactMarkdown>
                                                     </div>
                                                 </div>
                                             </AccordionContent>
@@ -1201,7 +1357,7 @@ const ToolInvocationListView = memo(
                         </div>
                     );
                 }
-                
+
                 if (toolInvocation.toolName === 'text_translate') {
                     return <TranslationTool toolInvocation={toolInvocation} result={result} />;
                 }
@@ -1212,7 +1368,9 @@ const ToolInvocationListView = memo(
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-2">
                                     <Plane className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Tracking flight...</span>
+                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">
+                                        Tracking flight...
+                                    </span>
                                 </div>
                                 <div className="flex space-x-1">
                                     {[0, 1, 2].map((index) => (
@@ -1225,7 +1383,7 @@ const ToolInvocationListView = memo(
                                                 repeat: Infinity,
                                                 duration: 0.8,
                                                 delay: index * 0.2,
-                                                repeatType: "reverse",
+                                                repeatType: 'reverse',
                                             }}
                                         />
                                     ))}
@@ -1236,9 +1394,7 @@ const ToolInvocationListView = memo(
 
                     if (result.error) {
                         return (
-                            <div className="text-red-500 dark:text-red-400">
-                                Error tracking flight: {result.error}
-                            </div>
+                            <div className="text-red-500 dark:text-red-400">Error tracking flight: {result.error}</div>
                         );
                     }
 
@@ -1298,15 +1454,15 @@ const ToolInvocationListView = memo(
                             minute: 'numeric',
                             second: 'numeric',
                             hour12: true,
-                            timeZone: timezone
+                            timeZone: timezone,
                         });
 
                         const formattedParts = formatter.formatToParts(time);
                         const timeParts = {
-                            hour: formattedParts.find(part => part.type === 'hour')?.value || '12',
-                            minute: formattedParts.find(part => part.type === 'minute')?.value || '00',
-                            second: formattedParts.find(part => part.type === 'second')?.value || '00',
-                            dayPeriod: formattedParts.find(part => part.type === 'dayPeriod')?.value || 'AM'
+                            hour: formattedParts.find((part) => part.type === 'hour')?.value || '12',
+                            minute: formattedParts.find((part) => part.type === 'minute')?.value || '00',
+                            second: formattedParts.find((part) => part.type === 'second')?.value || '00',
+                            dayPeriod: formattedParts.find((part) => part.type === 'dayPeriod')?.value || 'AM',
                         };
 
                         return (
@@ -1315,11 +1471,15 @@ const ToolInvocationListView = memo(
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.hour.padStart(2, '0')}
                                     </div>
-                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">:</div>
+                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">
+                                        :
+                                    </div>
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.minute.padStart(2, '0')}
                                     </div>
-                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">:</div>
+                                    <div className="mx-1 sm:mx-2 text-4xl sm:text-5xl md:text-6xl font-light text-neutral-400 dark:text-neutral-500">
+                                        :
+                                    </div>
                                     <div className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tighter tabular-nums text-neutral-900 dark:text-white">
                                         {timeParts.second.padStart(2, '0')}
                                     </div>
@@ -1345,7 +1505,8 @@ const ToolInvocationListView = memo(
                                                 </h3>
                                                 <div className="bg-neutral-100 dark:bg-neutral-800 rounded-md px-2 py-1 text-xs text-neutral-600 dark:text-neutral-300 font-medium flex items-center gap-1.5">
                                                     <PhosphorClock weight="regular" className="h-3 w-3 text-blue-500" />
-                                                    {result.timezone || new Intl.DateTimeFormat().resolvedOptions().timeZone}
+                                                    {result.timezone ||
+                                                        new Intl.DateTimeFormat().resolvedOptions().timeZone}
                                                 </div>
                                             </div>
                                             <LiveClock />
@@ -1373,26 +1534,14 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'memory_manager') {
                     if (!result) {
-                        return (
-                            <SearchLoadingState
-                                icon={Memory}
-                                text="Managing memories..."
-                                color="violet"
-                            />
-                        );
+                        return <SearchLoadingState icon={Memory} text="Managing memories..." color="violet" />;
                     }
                     return <MemoryManager result={result} />;
                 }
 
                 if (toolInvocation.toolName === 'mcp_search') {
                     if (!result) {
-                        return (
-                            <SearchLoadingState
-                                icon={Server}
-                                text="Searching MCP servers..."
-                                color="blue"
-                            />
-                        );
+                        return <SearchLoadingState icon={Server} text="Searching MCP servers..." color="blue" />;
                     }
 
                     return (
@@ -1412,9 +1561,9 @@ const ToolInvocationListView = memo(
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-0 px-3 pb-3">
-                                    <MCPServerList 
-                                        servers={result.servers || []} 
-                                        query={result.query} 
+                                    <MCPServerList
+                                        servers={result.servers || []}
+                                        query={result.query}
                                         error={result.error}
                                     />
                                 </CardContent>
@@ -1425,22 +1574,21 @@ const ToolInvocationListView = memo(
 
                 if (toolInvocation.toolName === 'reddit_search') {
                     if (!result) {
-                        return <SearchLoadingState
-                            icon={RedditLogo}
-                            text="Searching Reddit..."
-                            color="orange"
-                        />;
+                        return <SearchLoadingState icon={RedditLogo} text="Searching Reddit..." color="orange" />;
                     }
-                    
+
                     return <RedditSearch result={result} args={args} />;
                 }
 
                 return null;
             },
-            [message]
+            [message],
         );
 
-        const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({ toolInvocation, result }) => {
+        const TranslationTool: React.FC<{ toolInvocation: ToolInvocation; result: any }> = ({
+            toolInvocation,
+            result,
+        }) => {
             const [isPlaying, setIsPlaying] = useState(false);
             const [audioUrl, setAudioUrl] = useState<string | null>(null);
             const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -1449,7 +1597,7 @@ const ToolInvocationListView = memo(
             const waveRef = useRef<Wave | null>(null);
 
             useEffect(() => {
-                const _audioRef = audioRef.current
+                const _audioRef = audioRef.current;
                 return () => {
                     if (_audioRef) {
                         _audioRef.pause();
@@ -1461,12 +1609,14 @@ const ToolInvocationListView = memo(
             useEffect(() => {
                 if (audioUrl && audioRef.current && canvasRef.current) {
                     waveRef.current = new Wave(audioRef.current, canvasRef.current);
-                    waveRef.current.addAnimation(new waveRef.current.animations.Lines({
-                        lineWidth: 1.5,
-                        lineColor: 'rgb(147, 51, 234)',
-                        count: 80,
-                        mirroredY: true,
-                    }));
+                    waveRef.current.addAnimation(
+                        new waveRef.current.animations.Lines({
+                            lineWidth: 1.5,
+                            lineColor: 'rgb(147, 51, 234)',
+                            count: 80,
+                            mirroredY: true,
+                        }),
+                    );
                 }
             }, [audioUrl]);
 
@@ -1485,7 +1635,7 @@ const ToolInvocationListView = memo(
                             }
                         }, 100);
                     } catch (error) {
-                        console.error("Error generating speech:", error);
+                        console.error('Error generating speech:', error);
                         setIsGeneratingAudio(false);
                     }
                 } else if (audioRef.current) {
@@ -1525,7 +1675,15 @@ const ToolInvocationListView = memo(
                         <div className="space-y-4 sm:space-y-6">
                             <div>
                                 <p className="text-sm sm:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                                    The phrase <span className="font-medium text-neutral-900 dark:text-neutral-100">{toolInvocation.args.text}</span> translates from <span className="font-medium text-neutral-900 dark:text-neutral-100">{result.detectedLanguage}</span> to <span className="font-medium text-primary">{result.translatedText}</span>
+                                    The phrase{' '}
+                                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {toolInvocation.args.text}
+                                    </span>{' '}
+                                    translates from{' '}
+                                    <span className="font-medium text-neutral-900 dark:text-neutral-100">
+                                        {result.detectedLanguage}
+                                    </span>{' '}
+                                    to <span className="font-medium text-primary">{result.translatedText}</span>
                                 </p>
                             </div>
 
@@ -1563,7 +1721,10 @@ const ToolInvocationListView = memo(
                             src={audioUrl}
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
-                            onEnded={() => { setIsPlaying(false); handleReset(); }}
+                            onEnded={() => {
+                                setIsPlaying(false);
+                                handleReset();
+                            }}
                         />
                     )}
                 </Card>
@@ -1572,22 +1733,59 @@ const ToolInvocationListView = memo(
 
         return (
             <>
-                {toolInvocations.map(
-                    (toolInvocation: ToolInvocation, toolIndex: number) => (
-                        <div key={`tool-${toolIndex}`}>
-                            {renderToolInvocation(toolInvocation, toolIndex)}
-                        </div>
-                    )
-                )}
+                {toolInvocations.map((toolInvocation: ToolInvocation, toolIndex: number) => (
+                    <div key={`tool-${toolIndex}`}>{renderToolInvocation(toolInvocation, toolIndex)}</div>
+                ))}
             </>
         );
     },
     (prevProps, nextProps) => {
-        return prevProps.toolInvocations === nextProps.toolInvocations &&
-            prevProps.message === nextProps.message;
-    }
+        // Improved comparison function to prevent rerenders during streaming
+        // Check if toolInvocations are functionally the same even if they're different references
+        const prevTools = prevProps.toolInvocations;
+        const nextTools = nextProps.toolInvocations;
+
+        if (prevTools.length !== nextTools.length) return false;
+
+        // Deep comparison of toolInvocations to prevent unnecessary rerenders
+        for (let i = 0; i < prevTools.length; i++) {
+            const prevTool = prevTools[i];
+            const nextTool = nextTools[i];
+
+            // Compare toolName and args (which won't change during streaming)
+            if (prevTool.toolName !== nextTool.toolName) return false;
+
+            // If both have results, compare them shallowly (if they're the same reference, they're equal)
+            if ('result' in prevTool && 'result' in nextTool) {
+                // If results are different references but both exist, consider them equal
+                // during streaming if they represent the same data
+                if (prevTool.result !== nextTool.result) {
+                    // For charts, avoid deep comparison which could be expensive
+                    if (prevTool.toolName === 'code_interpreter' && prevTool.result?.chart && nextTool.result?.chart) {
+                        // If chart elements are identical references, they're equal
+                        if (prevTool.result.chart.elements === nextTool.result.chart.elements) {
+                            continue;
+                        }
+                    }
+
+                    // For stock charts
+                    if (prevTool.toolName === 'stock_chart' && prevTool.result?.chart && nextTool.result?.chart) {
+                        // If chart elements are identical references, they're equal
+                        if (prevTool.result.chart.elements === nextTool.result.chart.elements) {
+                            continue;
+                        }
+                    }
+                }
+            }
+
+            // If one has a result and the other doesn't, they're different
+            if ('result' in prevTool !== 'result' in nextTool) return false;
+        }
+
+        return true;
+    },
 );
 
 ToolInvocationListView.displayName = 'ToolInvocationListView';
 
-export default ToolInvocationListView; 
+export default ToolInvocationListView;

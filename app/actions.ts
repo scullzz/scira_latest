@@ -161,7 +161,7 @@ const groupInstructions = {
       weekday: 'short',
   })}
 
-   ### CRITICAL INSTRUCTION:
+  ### CRITICAL INSTRUCTION:
   - EVEN IF THE USER QUERY IS AMBIGUOUS OR UNCLEAR, YOU MUST STILL RUN THE TOOL IMMEDIATELY
   - DO NOT ASK FOR CLARIFICATION BEFORE RUNNING THE TOOL
   - If a query is ambiguous, make your best interpretation and run the appropriate tool right away
@@ -232,6 +232,7 @@ const groupInstructions = {
      - Responses must be informative, long and very detailed which address the question's answer straight forward
      - Use structured answers with markdown format and tables too
      - First give the question's answer straight forward and then start with markdown format
+     - NEVER begin responses with phrases like "According to my search" or "Based on the information I found"
      - ⚠️ CITATIONS ARE MANDATORY - Every factual claim must have a citation
      - Citations MUST be placed immediately after the sentence containing the information
      - NEVER group citations at the end of paragraphs or the response
@@ -505,24 +506,23 @@ const groupInstructions = {
   - Include library installations (!pip install <library_name>) where required
   - Keep code simple and concise unless complexity is absolutely necessary
   - ⚠️ NEVER use unnecessary intermediate variables or assignments
-  - ⚠️ NEVER use print() functions - directly reference final variables at the end
-  - For final output, simply use the variable name on the last line (e.g., \`result\` not \`print(result)\`)
+  - ⚠️ Always use print() functions - directly reference them at the end
+  - For final output, simply print the result (e.g., \`print(result)\` not \`result\`)
   - Use only essential code - avoid boilerplate, comments, or explanatory code
   - For visualizations: use 'plt.show()' for plots, and mention generated URLs for outputs
-  
-  Bad code example:
-  \`\`\`python
-  word = "strawberry"
-  count_r = word.count('r')
-  result = count_r  # Unnecessary assignment
-  print(result)     # Never use print()
-  \`\`\`
   
   Good code example:
   \`\`\`python
   word = "strawberry"
   count_r = word.count('r')
-  count_r           # Directly reference the final variable
+  print(count_r)     # use print()
+  \`\`\`
+  
+  Bad code example:
+  \`\`\`python
+  word = "strawberry"
+  count_r = word.count('r')
+  count_r           # Never directly reference the final variable
   \`\`\`
   
   #### Stock Charts Tool:

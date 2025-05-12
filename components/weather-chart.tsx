@@ -30,8 +30,8 @@ interface WeatherDataPoint {
     icon: string;
     pressure: number;
     clouds: number;
-    pop: number; // probability of precipitation
-    hour: number; // hour of day
+    pop: number;
+    hour: number;
 }
 
 interface AirPollutionData {
@@ -359,10 +359,10 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
 
     return (
         <Card className="my-2 py-0 shadow-none bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 gap-0">
-            <CardHeader className="py-2 px-4">
+            <CardHeader className="py-2 px-3 sm:px-4">
                 <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-neutral-800 dark:text-neutral-100 text-base">
+                    <div className="flex-1 min-w-0">
+                        <CardTitle className="text-neutral-800 dark:text-neutral-100 text-base truncate">
                             {result.geocoding?.name || result.city.name},{' '}
                             {result.geocoding?.country || result.city.country}
                         </CardTitle>
@@ -386,12 +386,12 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                     </div>
 
                     {/* Current Weather Brief */}
-                    <div className="flex items-center">
+                    <div className="flex items-center ml-4">
                         <div className="text-right">
-                            <div className="text-2xl font-light text-neutral-800 dark:text-neutral-100">
+                            <div className="text-2xl sm:text-3xl font-light text-neutral-800 dark:text-neutral-100">
                                 {currentWeather.temp}°C
                             </div>
-                            <div className="text-xs text-neutral-500 dark:text-neutral-400">
+                            <div className="text-[10px] sm:text-xs text-neutral-500 dark:text-neutral-400">
                                 Feels like {currentWeather.feelsLike}°C
                             </div>
                         </div>
@@ -406,7 +406,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                 </div>
 
                 {/* Current weather details - compact layout with icons */}
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-3">
                     <Badge
                         variant="outline"
                         className="flex items-center gap-1 py-1 px-3 border rounded-full bg-white/50 dark:bg-neutral-800/50"
@@ -448,38 +448,38 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
 
             <CardContent className="p-0">
                 <Tabs defaultValue="chart" className="w-full">
-                    <TabsList className="mx-4">
-                        <TabsTrigger value="chart" className="text-xs px-3">
+                    <TabsList className="mx-2 sm:mx-4">
+                        <TabsTrigger value="chart" className="text-[10px] sm:text-xs px-2 sm:px-3">
                             5-Day Overview
                         </TabsTrigger>
-                        <TabsTrigger value="detailed" className="text-xs px-3">
+                        <TabsTrigger value="detailed" className="text-[10px] sm:text-xs px-2 sm:px-3">
                             Hourly Forecast
                         </TabsTrigger>
-                        <TabsTrigger value="daily" className="text-xs px-3">
+                        <TabsTrigger value="daily" className="text-[10px] sm:text-xs px-2 sm:px-3">
                             16-Day Forecast
                         </TabsTrigger>
-                        <TabsTrigger value="airquality" className="text-xs px-3">
+                        <TabsTrigger value="airquality" className="text-[10px] sm:text-xs px-2 sm:px-3">
                             Air Quality
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="chart" className="pt-2 px-4 pb-0">
+                    <TabsContent value="chart" className="pt-2 px-2 sm:px-4 pb-0">
                         {/* Legend for 5-day overview */}
                         <div className="flex items-center justify-center gap-4 mb-2">
                             <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-full bg-[oklch(0.488_0.243_264.376)]" />
-                                <span className="text-[10px] text-neutral-600 dark:text-neutral-400">
+                                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[oklch(0.488_0.243_264.376)]" />
+                                <span className="text-[9px] sm:text-[10px] text-neutral-600 dark:text-neutral-400">
                                     Min Temperature
                                 </span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-full bg-[oklch(0.696_0.17_162.48)]" />
-                                <span className="text-[10px] text-neutral-600 dark:text-neutral-400">
+                                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[oklch(0.696_0.17_162.48)]" />
+                                <span className="text-[9px] sm:text-[10px] text-neutral-600 dark:text-neutral-400">
                                     Max Temperature
                                 </span>
                             </div>
                         </div>
-                        <ChartContainer config={chartConfig} className="aspect-auto! h-[200px]">
+                        <ChartContainer config={chartConfig} className="aspect-auto! h-[180px] sm:h-[200px]">
                             <ResponsiveContainer width="100%">
                                 <LineChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.2)" />
@@ -489,13 +489,14 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                             new Date(value).toLocaleDateString(undefined, { weekday: 'short' })
                                         }
                                         stroke="#9CA3AF"
-                                        tick={{ fontSize: 10 }}
+                                        tick={{ fontSize: 9 }}
+                                        height={30}
                                     />
                                     <YAxis
                                         domain={[Math.floor(minTemp) - 2, Math.ceil(maxTemp) + 2]}
                                         tickFormatter={(value) => `${value}°C`}
                                         stroke="#9CA3AF"
-                                        tick={{ fontSize: 10 }}
+                                        tick={{ fontSize: 9 }}
                                     />
                                     <ChartTooltip content={<ChartTooltipContent />} />
                                     <Line
@@ -522,7 +523,10 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                         <div className="mt-3 mb-2">
                             <div className="flex justify-between overflow-x-auto no-scrollbar pb-2">
                                 {chartData.map((day, index) => (
-                                    <div key={index} className="flex flex-col items-center min-w-[70px] p-2 mx-0.5">
+                                    <div
+                                        key={index}
+                                        className="flex flex-col items-center min-w-[60px] sm:min-w-[70px] p-1.5 sm:p-2 mx-0.5"
+                                    >
                                         <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200">
                                             {index === 0
                                                 ? 'Today'
@@ -560,7 +564,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="detailed" className="px-4 pb-2">
+                    <TabsContent value="detailed" className="px-2 sm:px-4 pb-2">
                         {/* Day selector tabs */}
                         <div className="mb-3 -mx-1 px-1">
                             <div className="flex overflow-x-auto no-scrollbar gap-1 py-1">
@@ -605,7 +609,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                         </span>
                                     </div>
                                 </div>
-                                <ResponsiveContainer width="100%" height={220}>
+                                <ResponsiveContainer width="100%" height={200}>
                                     <AreaChart
                                         data={hourlyDataByDay[selectedDay].map((item) => ({
                                             ...item,
@@ -685,7 +689,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                         )}
                     </TabsContent>
 
-                    <TabsContent value="daily" className="px-4 pb-2">
+                    <TabsContent value="daily" className="px-2 sm:px-4 pb-2">
                         {dailyForecast && dailyForecast.length > 0 ? (
                             <div className="mt-2">
                                 {/* Legend for daily forecast */}
@@ -710,7 +714,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                     </div>
                                 </div>
                                 {/* Daily forecast chart */}
-                                <div className="h-[200px] mb-4">
+                                <div className="h-[180px] sm:h-[200px] mb-4">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart
                                             data={dailyForecast}
@@ -876,7 +880,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                                 key={day.timestamp}
                                                 className="flex items-center p-2 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"
                                             >
-                                                <div className="w-10 text-center">
+                                                <div className="w-8 sm:w-10 text-center">
                                                     <div className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                                                         {index === 0
                                                             ? 'Today'
@@ -894,7 +898,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                                     </div>
                                                 </div>
 
-                                                <div className="w-10 flex-shrink-0">
+                                                <div className="w-8 sm:w-10 flex-shrink-0">
                                                     <img
                                                         src={getWeatherIconUrl(day.icon)}
                                                         alt={day.description}
@@ -902,19 +906,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                                     />
                                                 </div>
 
-                                                <div className="flex-1 pl-2">
-                                                    <div className="text-xs font-medium capitalize text-neutral-800 dark:text-neutral-200">
-                                                        {day.description}
-                                                    </div>
-                                                    {day.pop > 0 && (
-                                                        <div className="text-[10px] text-blue-600 dark:text-blue-400">
-                                                            {day.pop}% chance of{' '}
-                                                            {day.rain ? 'rain' : day.snow ? 'snow' : 'precipitation'}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                <div className="pr-1 flex items-center gap-2">
+                                                <div className="pr-1 flex items-center gap-1 sm:gap-2">
                                                     <div className="text-right">
                                                         <div className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
                                                             {day.maxTemp}°
@@ -924,7 +916,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                                         </div>
                                                     </div>
 
-                                                    <div className="border-l border-neutral-200 dark:border-neutral-700 pl-2 flex flex-col items-end">
+                                                    <div className="border-l border-neutral-200 dark:border-neutral-700 pl-1 sm:pl-2 flex flex-col items-end">
                                                         <div className="text-[10px] text-neutral-500 flex items-center">
                                                             <Wind className="h-3 w-3 mr-0.5 text-blue-500 dark:text-blue-400" />
                                                             {day.windSpeed}
@@ -947,7 +939,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                         )}
                     </TabsContent>
 
-                    <TabsContent value="airquality" className="px-4 pb-2">
+                    <TabsContent value="airquality" className="px-2 sm:px-4 pb-2">
                         <div className="mb-3">
                             {airPollution ? (
                                 <div className="space-y-4">
@@ -980,7 +972,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                         </div>
 
                                         {/* Air Quality Components */}
-                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                                             <div className="rounded-md bg-neutral-50 dark:bg-neutral-800 p-2">
                                                 <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">
                                                     PM2.5
@@ -1049,7 +1041,7 @@ const WeatherChart: React.FC<WeatherChartProps> = React.memo(({ result }) => {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="h-[200px]">
+                                                <div className="h-[180px] sm:h-[200px]">
                                                     <ResponsiveContainer width="100%" height="100%">
                                                         <AreaChart
                                                             data={airPollutionForecast.slice(0, 24)}

@@ -7,6 +7,7 @@ import { google } from '@ai-sdk/google';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import CodeInterpreter from '@e2b/code-interpreter';
+import { Daytona, ChartType, SandboxTargetRegion } from '@daytonaio/sdk';
 import { tavily } from '@tavily/core';
 import {
     convertToCoreMessages,
@@ -58,7 +59,8 @@ const middleware = extractReasoningMiddleware({
 
 const scira = customProvider({
     languageModels: {
-        'scira-default': xai('grok-3-beta'),
+        'scira-default': xai('grok-3-mini'),
+        'scira-grok-3': xai('grok-3-beta'),
         'scira-vision': xai('grok-2-vision-1212'),
         'scira-4o': openai('gpt-4o', {
             structuredOutputs: true,
@@ -75,19 +77,11 @@ const scira = customProvider({
             structuredOutputs: true,
         }),
         'scira-anthropic': anthropic('claude-3-7-sonnet-20250219'),
+        'scira-llama-4': groq('meta-llama/llama-4-maverick-17b-128e-instruct', {
+            parallelToolCalls: false,
+        }),
     },
 });
-
-interface XResult {
-    id: string;
-    url: string;
-    title: string;
-    author?: string;
-    publishedDate?: string;
-    text: string;
-    highlights?: string[];
-    tweetId: string;
-}
 
 interface MapboxFeature {
     id: string;
@@ -359,11 +353,11 @@ export async function POST(req: Request) {
                 }),
                 providerOptions: {
                     scira: {
-                        // ...(model === 'scira-default'
-                        //     ? {
-                        //           reasoningEffort: 'low',
-                        //       }
-                        //     : {}),
+                        ...(model === 'scira-default'
+                            ? {
+                                  reasoningEffort: 'high',
+                              }
+                            : {}),
                         ...(model === 'scira-o4-mini'
                             ? {
                                   reasoningEffort: 'medium',
@@ -372,14 +366,14 @@ export async function POST(req: Request) {
                         ...(model === 'scira-google'
                             ? {
                                   thinkingConfig: {
-                                      thinkingBudget: 5000,
+                                      thinkingBudget: 10000,
                                   },
                               }
                             : {}),
                     },
                     google: {
                         thinkingConfig: {
-                            thinkingBudget: 5000,
+                            thinkingBudget: 10000,
                         },
                     },
                     openai: {
@@ -389,13 +383,13 @@ export async function POST(req: Request) {
                               }
                             : {}),
                     },
-                    // xai: {
-                    //     ...(model === 'scira-default'
-                    //         ? {
-                    //               reasoningEffort: 'low',
-                    //           }
-                    //         : {}),
-                    // },
+                    xai: {
+                        ...(model === 'scira-default'
+                            ? {
+                                  reasoningEffort: 'high',
+                              }
+                            : {}),
+                    },
                     anthropic: {
                         thinking: { type: 'enabled', budgetTokens: 12000 },
                     },
@@ -633,6 +627,8 @@ export async function POST(req: Request) {
                             const code = `
 import yfinance as yf
 import matplotlib.pyplot as plt
+import pandas as pd
+from datetime import datetime
 
 ${stock_symbols
     .map(
@@ -646,6 +642,8 @@ plt.figure(figsize=(10, 6))
 ${stock_symbols
     .map(
         (symbol) => `
+# Convert datetime64 index to strings to make it serializable
+${symbol.toLowerCase().replace('.', '')}.index = ${symbol.toLowerCase().replace('.', '')}.index.strftime('%Y-%m-%d')
 plt.plot(${symbol.toLowerCase().replace('.', '')}.index, ${symbol
             .toLowerCase()
             .replace('.', '')}['Close'], label='${symbol} ${
@@ -665,49 +663,63 @@ plt.show()`;
 
                             console.log('Code:', code);
 
-                            const sandbox = await CodeInterpreter.create(serverEnv.SANDBOX_TEMPLATE_ID!);
-                            const execution = await sandbox.runCode(code);
+                            const daytona = new Daytona();
+                            const sandbox = await daytona.create({
+                                language: 'python',
+                                target: SandboxTargetRegion.US,
+                                resources: {
+                                    cpu: 2,
+                                    memory: 5,
+                                    disk: 10,
+                                },
+                                autoStopInterval: 0,
+                            });
+
+                            const pipInstall = await sandbox.process.executeCommand('pip install yfinance');
+                            console.log('Pip install:', pipInstall.result);
+
+                            const execution = await sandbox.process.codeRun(code);
                             let message = '';
 
-                            if (execution.results.length > 0) {
-                                for (const result of execution.results) {
-                                    if (result.isMainResult) {
-                                        message += `${result.text}\n`;
-                                    } else {
-                                        message += `${result.text}\n`;
-                                    }
-                                }
+                            if (execution.result) {
+                                message += execution.result;
                             }
 
-                            if (execution.logs.stdout.length > 0 || execution.logs.stderr.length > 0) {
-                                if (execution.logs.stdout.length > 0) {
-                                    message += `${execution.logs.stdout.join('\n')}\n`;
-                                }
-                                if (execution.logs.stderr.length > 0) {
-                                    message += `${execution.logs.stderr.join('\n')}\n`;
-                                    console.log('Error: ', execution.logs.stderr);
-                                }
+                            if (execution.artifacts?.stdout) {
+                                message += execution.artifacts.stdout;
                             }
 
-                            if (execution.error) {
-                                message += `Error: ${execution.error}\n`;
-                                console.log('Error: ', execution.error);
-                            }
+                            console.log('execution exit code: ', execution.exitCode);
+                            console.log('execution result: ', execution.result);
 
-                            console.log('Chart details: ', execution.results[0].chart);
-                            if (execution.results[0].chart) {
-                                execution.results[0].chart.elements.map((element: any) => {
+                            console.log('Chart details: ', execution.artifacts?.charts);
+                            if (execution.artifacts?.charts) {
+                                console.log('showing chart');
+                                execution.artifacts.charts[0].elements.map((element: any) => {
                                     console.log(element.points);
                                 });
                             }
 
-                            if (execution.results[0].chart === null) {
+                            if (execution.artifacts?.charts === undefined) {
                                 console.log('No chart found');
                             }
 
+                            await sandbox.delete();
+
+                            // map the chart to the correct format for the frontend and remove the png property
+                            const chart = execution.artifacts?.charts?.[0] ?? undefined;
+                            const chartData = chart
+                                ? {
+                                      type: chart.type,
+                                      title: chart.title,
+                                      elements: chart.elements,
+                                      png: undefined,
+                                  }
+                                : undefined;
+
                             return {
                                 message: message.trim(),
-                                chart: execution.results[0].chart ?? '',
+                                chart: chartData,
                                 currency_symbols: formattedCurrencySymbols,
                                 news_results: news_results,
                             };
@@ -1408,37 +1420,58 @@ plt.show()`;
                             console.log('Title:', title);
                             console.log('Icon:', icon);
 
-                            const sandbox = await CodeInterpreter.create(serverEnv.SANDBOX_TEMPLATE_ID!);
-                            const execution = await sandbox.runCode(code);
+                            const daytona = new Daytona();
+                            const sandbox = await daytona.create({
+                                language: 'python',
+                                target: SandboxTargetRegion.US,
+                                resources: {
+                                    cpu: 4,
+                                    memory: 8,
+                                    disk: 10,
+                                },
+                                timeout: 300,
+                            });
+
+                            const execution = await sandbox.process.codeRun(code);
+
+                            console.log('Execution:', execution.result);
+                            console.log('Execution:', execution.artifacts?.stdout);
+
                             let message = '';
 
-                            if (execution.results.length > 0) {
-                                for (const result of execution.results) {
-                                    if (result.isMainResult) {
-                                        message += `${result.text}\n`;
-                                    } else {
-                                        message += `${result.text}\n`;
-                                    }
-                                }
+                            if (execution.result) {
+                                message += execution.result;
                             }
 
-                            if (execution.logs.stdout.length > 0 || execution.logs.stderr.length > 0) {
-                                if (execution.logs.stdout.length > 0) {
-                                    message += `${execution.logs.stdout.join('\n')}\n`;
-                                }
-                                if (execution.logs.stderr.length > 0) {
-                                    message += `${execution.logs.stderr.join('\n')}\n`;
-                                }
+                            if (execution.artifacts?.stdout) {
+                                message += execution.artifacts.stdout;
                             }
 
-                            if (execution.error) {
-                                message += `Error: ${execution.error}\n`;
-                                console.log('Error: ', execution.error);
+                            if (execution.artifacts?.charts) {
+                                console.log('Chart:', execution.artifacts.charts[0]);
                             }
+
+                            let chart;
+
+                            if (execution.artifacts?.charts) {
+                                chart = execution.artifacts.charts[0];
+                            }
+
+                            // map the chart to the correct format for the frontend and remove the png property
+                            const chartData = chart
+                                ? {
+                                      type: chart.type,
+                                      title: chart.title,
+                                      elements: chart.elements,
+                                      png: undefined,
+                                  }
+                                : undefined;
+
+                            await sandbox.delete();
 
                             return {
                                 message: message.trim(),
-                                chart: execution.results[0].chart ?? '',
+                                chart: chartData,
                             };
                         },
                     }),

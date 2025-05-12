@@ -138,9 +138,21 @@ const GroqIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const models = [
-    // { value: "scira-default", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-current", description: "xAI's most efficient reasoning model", color: "black", vision: false, reasoning: true, experimental: false, category: "Stable", pdf: false },
     {
         value: 'scira-default',
+        label: 'Grok 3.0 Mini',
+        icon: XAIIcon,
+        iconClass: 'text-current',
+        description: "xAI's most efficient reasoning model",
+        color: 'black',
+        vision: false,
+        reasoning: true,
+        experimental: false,
+        category: 'Stable',
+        pdf: false,
+    },
+    {
+        value: 'scira-grok-3',
         label: 'Grok 3.0',
         icon: XAIIcon,
         iconClass: 'text-current',
@@ -228,6 +240,19 @@ const models = [
         reasoning: true,
         experimental: false,
         category: 'Stable',
+        pdf: false,
+    },
+    {
+        value: 'scira-llama-4',
+        label: 'Llama 4 Maverick',
+        icon: GroqIcon,
+        iconClass: 'text-current',
+        description: "Meta's latest model",
+        color: 'blue',
+        vision: true,
+        reasoning: false,
+        experimental: true,
+        category: 'Experimental',
         pdf: false,
     },
     {
