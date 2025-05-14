@@ -215,6 +215,9 @@ importers:
       prismjs:
         specifier: ^1.30.0
         version: 1.30.0
+      providers:
+        specifier: link:@/ai/providers
+        version: link:@/ai/providers
       react:
         specifier: ^18
         version: 18.3.1

@@ -79,6 +79,7 @@
     "nuqs": "^2.4.3",
     "posthog-js": "^1.236.0",
     "prismjs": "^1.30.0",
+    "providers": "link:@/ai/providers",
     "react": "^18",
     "react-dom": "^18",
     "react-latex-next": "^3.0.0",
