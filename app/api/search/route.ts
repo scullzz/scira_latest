@@ -764,19 +764,17 @@ plt.show()`;
                         },
                     }),
                     web_search: tool({
-                        description: 'Search the web for information with 5-10 queries, max results and search depth.',
+                        description: 'Search the web for information with 3 queries, max results and search depth.',
                         parameters: z.object({
                             queries: z.array(
                                 z
                                     .string()
-                                    .describe(
-                                        'Array of search queries to look up on the web. Default is 5 to 10 queries.',
-                                    ),
+                                    .describe('Array of search queries to look up on the web. Default is 3 queries.'),
                             ),
                             maxResults: z.array(
                                 z
                                     .number()
-                                    .describe('Array of maximum number of results to return per query. Default is 10.'),
+                                    .describe('Array of maximum number of results to return per query. Default is 3.'),
                             ),
                             topics: z.array(
                                 z
@@ -785,9 +783,9 @@ plt.show()`;
                             ),
                             searchDepth: z.array(
                                 z
-                                    .enum(['basic', 'advanced'])
+                                    .enum(['basic'])
                                     .describe(
-                                        'Array of search depths to use. Default is basic. Use advanced for more detailed results.',
+                                        'Array of search depths to use. Default is basic.',
                                     ),
                             ),
                             include_domains: z
@@ -812,7 +810,7 @@ plt.show()`;
                             queries: string[];
                             maxResults: number[];
                             topics: ('general' | 'news' | 'finance')[];
-                            searchDepth: ('basic' | 'advanced')[];
+                            searchDepth: ('basic')[];
                             include_domains?: string[];
                             exclude_domains?: string[];
                         }) => {
@@ -832,7 +830,7 @@ plt.show()`;
                                 const data = await tvly.search(query, {
                                     topic: topics[index] || topics[0] || 'general',
                                     days: topics[index] === 'news' ? 7 : undefined,
-                                    maxResults: maxResults[index] || maxResults[0] || 10,
+                                    maxResults: maxResults[index] || maxResults[0] || 3,
                                     searchDepth: searchDepth[index] || searchDepth[0] || 'basic',
                                     includeAnswer: true,
                                     includeImages: true,

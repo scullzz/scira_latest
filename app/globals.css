@@ -10,6 +10,7 @@
     from {
         height: 0;
     }
+
     to {
         height: var(--radix-accordion-content-height);
     }
@@ -19,6 +20,7 @@
     from {
         height: var(--radix-accordion-content-height);
     }
+
     to {
         height: 0;
     }
@@ -113,6 +115,7 @@
         0% {
             transform: translateX(-100%);
         }
+
         100% {
             transform: translateX(200%);
         }
@@ -151,6 +154,15 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+
+    [role='button'],
+    button {
+        cursor: pointer;
+    }
+
+    :disabled {
+        cursor: default;
     }
 
     .whatsize {
@@ -293,6 +305,7 @@
     * {
         @apply border-border outline-ring/50;
     }
+
     body {
         @apply bg-background text-foreground;
     }
