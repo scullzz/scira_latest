@@ -782,11 +782,7 @@ plt.show()`;
                                     .describe('Array of topic types to search for. Default is general.'),
                             ),
                             searchDepth: z.array(
-                                z
-                                    .enum(['basic'])
-                                    .describe(
-                                        'Array of search depths to use. Default is basic.',
-                                    ),
+                                z.enum(['basic']).describe('Array of search depths to use. Default is basic.'),
                             ),
                             include_domains: z
                                 .array(z.string())
@@ -810,7 +806,7 @@ plt.show()`;
                             queries: string[];
                             maxResults: number[];
                             topics: ('general' | 'news' | 'finance')[];
-                            searchDepth: ('basic')[];
+                            searchDepth: 'basic'[];
                             include_domains?: string[];
                             exclude_domains?: string[];
                         }) => {

@@ -150,7 +150,7 @@ Plan Guidelines:
 - Generate specific, diverse search queries for each aspect
 - Search for relevant information using the web search tool
 - Analyze the results and identify important facts and insights
-- The plan is limited to 4 actions, do not exceed this limit
+- The plan is limited to 3 actions, do not exceed this limit
 - Follow up with more specific queries as you learn more
 - No need to synthesize your findings into a comprehensive response, just return the results
 - The plan should be concise and to the point, no more than 3 items
@@ -174,7 +174,7 @@ Plan Guidelines:
     // Create the autonomous research agent with tools
     const { text, toolResults } = await generateText({
         model: scira.languageModel('scira-default'),
-        maxSteps: totalTodos + 2,
+        maxSteps: totalTodos + 1,
         system: `
 You are an autonomous deep research analyst. Your goal is to research the given research plan thoroughly with the given tools.
 
@@ -196,7 +196,7 @@ For searching:
 For research:
 - Carefully follow the plan, do not skip any steps
 - Do not use the same query twice to avoid duplicates
-- Plan is limited to ${totalTodos} actions with 2 extra actions in case of errors, do not exceed this limit
+- Plan is limited to ${totalTodos} actions with 1 extra actions in case of errors, do not exceed this limit
 
 Research Plan:
 ${JSON.stringify(plan.plan)}
