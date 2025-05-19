@@ -512,7 +512,6 @@ const ExtremeSearchComponent = ({
                     annotation.source &&
                     typeof annotation.source.url === 'string'
                 ) {
-                    // Find the query by queryId if available, otherwise use the last query
                     const queryId = annotation.queryId;
                     const targetQuery = queryId
                         ? acc.find((q) => q.queryId === queryId)
